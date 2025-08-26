@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task Manager</title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #0f1720;
+            --muted: #94a3b8;
+            --text: #e5e7eb;
+            --accent: #60a5fa;
+            --ok: #22c55e;
+            --warn: #f59e0b;
+            --err: #ef4444;
+            --chip: #111827;
+            --chip-border: #1f2937;
+            --border: #1f2937;
+            --shadow: 0 10px 30px rgba(0,0,0,.35);
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
+
+        body {
+            margin: 0; padding: 24px;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Segoe UI", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: radial-gradient(1200px 600px at 70% -10%, rgba(96,165,250,.15), transparent 60%), var(--bg);
+            color: var(--text);
+        }
+
+        h1 {
+            margin: 0 0 14px; font-weight: 800; letter-spacing: .4px;
+            font-size: clamp(24px, 3vw, 36px);
+        }
+
+        .toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+        .btn {
+            appearance:none; border:1px solid var(--border); background:linear-gradient(180deg, #121a24, #0c131b);
+            color:var(--text); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600;
+            transition: transform .08s ease, border-color .2s ease, box-shadow .2s ease;
+            box-shadow: 0 2px 0 rgba(255,255,255,.03) inset, 0 8px 20px rgba(0,0,0,.28);
+        }
+        .btn:hover { transform: translateY(-1px); border-color:#2a3a4d; }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { border-color: #2563eb; background: linear-gradient(180deg,#1d4ed8,#1e40af); }
+
+        #msg { margin: 12px 0 6px; min-height: 22px; font-weight:600; }
+        #msg.ok { color: var(--ok); }
+        #msg.err { color: var(--err); }
+
+        .grid {
+            display:grid; grid-template-columns: 1fr 440px; gap: 18px; align-items:start;
+        }
+        @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+        form.card {
+            border:1px solid var(--border); background:linear-gradient(180deg, #0d1520, #0a0f15);
+            border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow);
+        }
+        form h3 { margin: 6px 0 12px; }
+        label { display:block; margin:10px 0 6px; font-weight:700; color: var(--muted); }
+        input, select {
+            width: 100%; padding: 10px 12px; border-radius: 10px; border:1px solid var(--border);
+            background: #0b121a; color: var(--text);
+        }
+        .row { display:flex; gap:10px; }
+        .row > div { flex:1; }
+
+        /* TABLE */
+        .table-wrap { border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); background: var(--panel); }
+        table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 14px; }
+        thead th { position: sticky; top: 0; background: #0d1620; z-index: 1; text-align:left; font-weight:800; color:#cbd5e1; padding:12px; border-bottom:1px solid var(--border); }
+        tbody td { padding: 12px; border-bottom:1px solid var(--border); vertical-align: middle; }
+        tbody tr:hover { background: #0c141d; }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .chip { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; background: var(--chip); border:1px solid var(--chip-border); font-weight:700; font-size:12px; color:#cbd5e1; }
+        .chip.type { text-transform: uppercase; letter-spacing:.4px; }
+        .chip.status.NEW { border-color:#334155; }
+        .chip.status.IN_PROGRESS { border-color:#1d4ed8; }
+        .chip.status.DONE { border-color:#16a34a; }
+
+        .actions { display:flex; align-items:center; gap:8px; justify-content:flex-end; }
+        .icon-btn { border:1px solid var(--border); background:#0b121a; color:#e5e7eb; width:34px; height:34px; border-radius:10px; cursor:pointer; }
+        .icon-btn:hover { border-color:#334155; }
+        .icon-btn.danger { background:#1b0f12; border-color:#3f1a22; color:#fecaca; }
+        .empty { padding:16px; text-align:center; color:var(--muted); }
+
+        .hint { font-size:12px; color:#9ca3af; margin-top:6px; }
+    </style>
+</head>
+<body>
+<h1>Task Manager</h1>
+
+<div class="toolbar" style="margin-bottom:10px;">
+    <button id="btnViewAll" class="btn btn-primary">All</button>
+    <button id="btnViewTasks" class="btn">All Tasks</button>
+    <button id="btnViewEpics" class="btn">All Epics</button>
+    <button id="btnViewSubTasks" class="btn">All SubTasks</button>
+</div>
+
+<div id="msg"></div>
+
+<div class="grid">
+    <div>
+        <div class="table-wrap">
+            <table id="taskTable">
+                <thead>
+                <tr>
+                    <th style="width:110px;">Type</th>
+                    <th style="width:80px;">ID</th>
+                    <th>Name</th>
+                    <th style="width:140px;">Status</th>
+                    <th style="width:210px;">Start</th>
+                    <th style="width:140px;">Duration</th>
+                    <th style="width:130px;">Relation</th>
+                    <th style="width:110px; text-align:right;">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="taskTbody">
+                <tr><td class="empty" colspan="8">Choose a filter or add the first task</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="hint">Time is formatted by locale (en-US), duration — in minutes/hours.</div>
+    </div>
+
+    <form id="taskForm" class="card">
+        <h3>Add</h3>
+
+        <label>Type</label>
+        <select id="itemType">
+            <option value="TASK">Task</option>
+            <option value="EPIC">Epic</option>
+            <option value="SUBTASK">SubTask</option>
+        </select>
+
+        <label>Name</label>
+        <input type="text" id="name" required />
+
+        <label>Description</label>
+        <input type="text" id="desc" required />
+
+        <div id="epicIdWrap" style="display:none;">
+            <label>Epic ID (for SubTask)</label>
+            <input type="number" id="epicId" min="0" />
+        </div>
+
+        <div id="timingWrap">
+            <label>Status</label>
+            <select id="status">
+                <option value="NEW">NEW</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="DONE">DONE</option>
+            </select>
+
+            <div class="row">
+                <div>
+                    <label>Duration (minutes)</label>
+                    <input type="number" id="duration" value="30" min="0" />
+                </div>
+                <div>
+                    <label>Start</label>
+                    <input type="datetime-local" id="start" />
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:12px; width:100%;">Add</button>
+    </form>
+</div>
+
+<!-- Edit modal -->
+<div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.35);">
+    <div style="background:#0b121a; border:1px solid var(--border); max-width:460px; margin:6% auto; padding:16px; border-radius:14px; color:var(--text); box-shadow:var(--shadow)">
+        <h3 id="editTitle" style="margin-top:0;">Edit</h3>
+
+        <input type="hidden" id="editId">
+        <input type="hidden" id="editType"> <!-- TASK | SUBTASK -->
+
+        <label>Name
+            <input id="editName" type="text" required>
+        </label>
+
+        <label>Description
+            <input id="editDesc" type="text" required>
+        </label>
+
+        <label>Status
+            <select id="editStatus">
+                <option value="NEW">NEW</option>
+                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                <option value="DONE">DONE</option>
+            </select>
+        </label>
+
+        <label>Duration (min)
+            <input id="editDuration" type="number" min="0" value="30">
+        </label>
+
+        <label>Start
+            <input id="editStart" type="datetime-local">
+        </label>
+
+        <div id="editEpicRow" style="display:none;">
+            <label>Epic ID
+                <input id="editEpicId" type="number" min="0">
+            </label>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="submitEdit()">Save</button>
+            <button class="btn" onclick="closeEdit()" type="button">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:8080";
+    const $ = (id) => document.getElementById(id);
+
+    // formatting
+    const dtFmt = new Intl.DateTimeFormat('en-US', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    function fmtDate(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d)) return iso; // if the server returned a non-standard format, show as-is
+        return dtFmt.format(d).replace(',', '');
+    }
+    function isoDurationToMinutes(iso) {
+        if (!iso) return 0;
+        if (typeof iso === 'number') return iso;
+        if (iso.startsWith?.('PT')) {
+            const m = /PT(?:(\d+)H)?(?:(\d+)M)?/i.exec(iso);
+            const h = m && m[1] ? Number(m[1]) : 0;
+            const mm = m && m[2] ? Number(m[2]) : 0;
+            return h * 60 + mm;
+        }
+        return Number(iso) || 0;
+    }
+    function minutesToISODuration(min) { return `PT${Number(min||0)}M`; }
+    function humanDuration(min) {
+        min = Number(min||0);
+        const h = Math.floor(min/60), m = min%60;
+        if (h && m) return `${h}\u00A0h ${m}\u00A0min`;
+        if (h) return `${h}\u00A0h`;
+        return `${m}\u00A0min`;
+    }
+    function toLocalInputValue(iso) { return iso ? iso.slice(0,16) : ''; }
+
+    // UI helpers
+    function showMsg(text, isErr=false) {
+        const el = $('msg');
+        el.textContent = text; el.className = isErr ? 'err' : 'ok';
+    }
+    function clearMsg(){ const el=$('msg'); el.textContent=''; el.className=''; }
+
+    // types
+    function detectType(obj) {
+        if (obj && typeof obj === 'object') {
+            if ('epicId' in obj) return 'SUBTASK';
+            if ('subtasks' in obj) return 'EPIC';
+        }
+        return 'TASK';
+    }
+
+    // TABLE RENDER
+    function renderList(data, typeHint) {
+        const tbody = $('taskTbody');
+        tbody.innerHTML = '';
+
+        const items = Array.isArray(data) ? data : Object.values(data);
+        const filtered = typeHint ? items.filter(it => detectType(it) === typeHint) : items;
+
+        if (!filtered.length) {
+            tbody.innerHTML = '<tr><td class="empty" colspan="8">No items yet.</td></tr>';
+            return;
+        }
+
+        for (const item of filtered) {
+            const t = detectType(item);
+            const id = item.id ?? '';
+            const startIso = item.startTime ?? '';
+            const start = fmtDate(startIso);
+            const durMin = isoDurationToMinutes(item.duration);
+            const durText = durMin ? humanDuration(durMin) : '—';
+            const status = item.status ?? '—';
+            const name = item.name ?? '';
+            const relation = t === 'SUBTASK' ? (item.epicId != null ? `Epic #${item.epicId}` : '—')
+                : t === 'EPIC' ? (Array.isArray(item.subtasks) ? `${item.subtasks.length} subtask(s)` : '—')
+                    : '—';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+          <td><span class=\"chip type\">${t}</span></td>
+          <td>#${id}</td>
+          <td title=\"${(item.description||'').replace(/\"/g,'&quot;')}\"><strong>${name}</strong></td>
+          <td><span class=\"chip status ${status}\">${status}</span></td>
+          <td>${start}</td>
+          <td>${durText}</td>
+          <td>${relation}</td>
+          <td class=\"actions\">
+            <button class=\"icon-btn\" title=\"Edit\">✏️</button>
+            <button class=\"icon-btn danger\" title=\"Delete\">✖</button>
+          </td>`;
+
+            const [editBtn, delBtn] = tr.querySelectorAll('.actions .icon-btn');
+            editBtn.onclick = () => openEdit(item);
+            delBtn.onclick = () => deleteItem(t, id);
+
+            tbody.appendChild(tr);
+        }
+    }
+
+    // API helpers
+    async function fetchJson(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
+        return res.json();
+    }
+
+    async function load(type) {
+        clearMsg();
+        let url;
+        if (type === 'TASK') url = `${API}/tasks`;
+        if (type === 'EPIC') url = `${API}/epics`;
+        if (type === 'SUBTASK') url = `${API}/subtasks`;
+        try {
+            const data = await fetchJson(url);
+            renderList(data, type);
+        } catch (e) {
+            console.error(e);
+            showMsg(`Load error ${type}: ${e.message}`, true);
+        }
+    }
+
+    async function loadAll() {
+        try {
+            const [tasksRes, epicsRes, subtasksRes] = await Promise.all([
+                fetch(`${API}/tasks`).then(r=>r.json()),
+                fetch(`${API}/epics`).then(r=>r.json()),
+                fetch(`${API}/subtasks`).then(r=>r.json())
+            ]);
+
+            const norm = (x) => Array.isArray(x) ? x : Object.values(x || {});
+            const tOnly = norm(tasksRes).filter(it => detectType(it) === 'TASK');
+            const eOnly = norm(epicsRes).filter(it => detectType(it) === 'EPIC');
+            const sOnly = norm(subtasksRes).filter(it => detectType(it) === 'SUBTASK');
+
+            // duplicate protection if some endpoints return mixed types
+            const unique = new Map();
+            for (const it of [...tOnly, ...eOnly, ...sOnly]) {
+                const key = `${detectType(it)}:${it.id}`;
+                if (!unique.has(key)) unique.set(key, it);
+            }
+            const all = Array.from(unique.values());
+            renderList(all);
+        } catch (e) {
+            console.error(e);
+            showMsg(`Load error: ${e.message}`, true);
+        }
+    }
+
+    // CRUD: delete
+    async function deleteItem(type, id) {
+        clearMsg();
+        let url;
+        if (type === 'TASK') url = `${API}/tasks/${id}`;
+        if (type === 'EPIC') url = `${API}/epics/${id}`;
+        if (type === 'SUBTASK') url = `${API}/subtasks/${id}`;
+        try {
+            const res = await fetch(url, { method:'DELETE' });
+            if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
+            showMsg(`${type} #${id} deleted ✔`);
+            await load(type);
+        } catch (e) {
+            console.error(e);
+            showMsg(`Delete error: ${e.message}`, true);
+        }
+    }
+
+    // EDIT modal
+    function openEdit(item) {
+        const modal = $('editModal');
+        $('editId').value = item.id;
+        $('editName').value = item.name ?? '';
+        $('editDesc').value = item.description ?? '';
+        $('editStatus').value = item.status ?? 'NEW';
+        $('editDuration').value = isoDurationToMinutes(item.duration);
+        $('editStart').value = toLocalInputValue(item.startTime);
+
+        const type = item.type || (item.epicId != null ? 'SUBTASK' : (item.subtasks ? 'EPIC' : 'TASK'));
+        $('editType').value = type;
+
+        const epicRow = $('editEpicRow');
+        if (type === 'SUBTASK') {
+            epicRow.style.display = '';
+            $('editEpicId').value = item.epicId ?? '';
+            $('editTitle').textContent = `Edit SubTask #${item.id}`;
+        } else {
+            epicRow.style.display = 'none';
+            $('editTitle').textContent = type === 'TASK' ? `Edit Task #${item.id}` : `Epic #${item.id} (editing disabled)`;
+        }
+        modal.style.display = 'block';
+    }
+    function closeEdit(){ $('editModal').style.display='none'; }
+
+    async function submitEdit() {
+        const id = $('editId').value;
+        const type = $('editType').value;
+        if (type === 'EPIC') { alert('Updating epics via API is not supported.'); return; }
+
+        const payload = {
+            id: Number(id),
+            name: $('editName').value.trim(),
+            description: $('editDesc').value.trim(),
+            status: $('editStatus').value,
+            duration: minutesToISODuration($('editDuration').value),
+            startTime: $('editStart').value
+        };
+        let url = `${API}/tasks/${id}`;
+        if (type === 'SUBTASK') { payload.epicId = Number($('editEpicId').value); url = `${API}/subtasks/${id}`; }
+
+        try {
+            const resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            if (!resp.ok) { const txt = await resp.text(); throw new Error(`${resp.status} ${txt}`); }
+            closeEdit();
+            await loadAll();
+        } catch (e) {
+            console.error('update error:', e);
+            alert('Failed to update task: ' + e.message);
+        }
+    }
+    window.submitEdit = submitEdit; // for the button in markup
+    window.openEdit = openEdit;
+    window.closeEdit = closeEdit;
+
+    // Create
+    $('taskForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearMsg();
+        const type = $('itemType').value;
+        const name = $('name').value.trim();
+        const description = $('desc').value.trim();
+        if (!name || !description) { showMsg('Name and description are required', true); return; }
+
+        let url, payload;
+        if (type === 'EPIC') {
+            url = `${API}/epics`;
+            payload = { name, description };
+        } else if (type === 'TASK') {
+            url = `${API}/tasks`;
+            payload = { name, description, status: $('status').value, duration: minutesToISODuration($('duration').value), startTime: $('start').value };
+        } else {
+            url = `${API}/subtasks`;
+            const epicId = Number($('epicId').value);
+            if (!Number.isFinite(epicId)) { showMsg('For SubTask, provide a valid Epic ID', true); return; }
+            payload = { name, description, status: $('status').value, duration: minutesToISODuration($('duration').value), startTime: $('start').value, epicId };
+        }
+
+        try {
+            const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            if (!res.ok) throw new Error(`HTTP ${res.status} ${await res.text()}`);
+            showMsg(`${type} added ✔`);
+            $('taskForm').reset();
+            $('start').value = new Date().toISOString().slice(0,16);
+            $('itemType').dispatchEvent(new Event('change'));
+            await load(type === 'SUBTASK' ? 'SUBTASK' : type);
+        } catch (e) {
+            console.error(e);
+            showMsg(`Add error: ${e.message}`, true);
+        }
+    });
+
+    // Toggles
+    $('itemType').addEventListener('change', () => {
+        const type = $('itemType').value; const isSub = type === 'SUBTASK'; const isEpic = type === 'EPIC';
+        $('epicIdWrap').style.display = isSub ? 'block' : 'none';
+        $('timingWrap').style.display = isEpic ? 'none' : 'block';
+    });
+
+    // Filters
+    $('btnViewTasks').onclick = () => load('TASK');
+    $('btnViewEpics').onclick = () => load('EPIC');
+    $('btnViewSubTasks').onclick = () => load('SUBTASK');
+    $('btnViewAll').onclick = () => loadAll();
+
+    // initial values
+    (function setNow(){ const now = new Date(); $('start').value = now.toISOString().slice(0,16); })();
+    $('itemType').dispatchEvent(new Event('change'));
+    // initial render
+    loadAll();
+</script>
+</body>
+</html>

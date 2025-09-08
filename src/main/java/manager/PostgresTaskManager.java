@@ -125,7 +125,8 @@ public class PostgresTaskManager implements TaskManager {
             }
             if (task instanceof SubTask s) updateEpicStatus(s.getEpicId(), c);
         } catch (SQLException e) {
-            throw new RuntimeException("DB addTask failed", e); }
+            throw new RuntimeException("DB addTask failed", e);
+        }
     }
 
     @Override
@@ -136,7 +137,8 @@ public class PostgresTaskManager implements TaskManager {
             while (rs.next()) out.add((SubTask) mapRow(rs));
             return out;
         } catch (SQLException e) {
-            throw new RuntimeException(e); }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -151,7 +153,8 @@ public class PostgresTaskManager implements TaskManager {
                 return t;
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e); }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -162,7 +165,8 @@ public class PostgresTaskManager implements TaskManager {
                 find.setInt(1, id);
                 try (ResultSet rs = find.executeQuery()) {
                     if (!rs.next()) {
-                        System.out.println("Update failed! Task with such ID not found."); return; }
+                        System.out.println("Update failed! Task with such ID not found."); return;
+                    }
                     existingType = rs.getString(1);
                 }
             }
@@ -203,7 +207,9 @@ public class PostgresTaskManager implements TaskManager {
                 }
             }
             System.out.println("Updated successfully!");
-        } catch (SQLException e) { throw new RuntimeException(e); }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -214,7 +220,8 @@ public class PostgresTaskManager implements TaskManager {
                 f.setInt(1, id);
                 try (ResultSet rs = f.executeQuery()) {
                     if (!rs.next()) {
-                        System.out.println("Delete failed! Task with such ID not found."); return; }
+                        System.out.println("Delete failed! Task with such ID not found."); return;
+                    }
                     type = rs.getString(1);
                     epicId = (Integer) rs.getObject(2);
                 }
@@ -246,7 +253,8 @@ public class PostgresTaskManager implements TaskManager {
 
             System.out.println("Deleted successfully!");
         } catch (SQLException e) {
-            throw new RuntimeException(e); }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -259,7 +267,8 @@ public class PostgresTaskManager implements TaskManager {
                 while (rs.next()) System.out.println(mapRow(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e); }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -270,7 +279,8 @@ public class PostgresTaskManager implements TaskManager {
                 f.setInt(1, id);
                 try (ResultSet rs = f.executeQuery()) {
                     if (!rs.next()) {
-                        System.out.println("Task with ID " + id + " not found."); return; }
+                        System.out.println("Task with ID " + id + " not found."); return;
+                    }
                     type = rs.getString(1);
                     epicId = (Integer) rs.getObject(2);
                 }
@@ -287,7 +297,8 @@ public class PostgresTaskManager implements TaskManager {
             if ("SUBTASK".equals(type) && epicId != null) updateEpicStatus(epicId, c);
             System.out.println("Task ID " + id +  " status successfully updated.");
         } catch (SQLException e) {
-            throw new RuntimeException(e); }
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -323,7 +334,9 @@ public class PostgresTaskManager implements TaskManager {
                 map.put(t.getId(), t);
             }
             return map;
-        } catch (SQLException e) { throw new RuntimeException(e); }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -344,11 +357,14 @@ public class PostgresTaskManager implements TaskManager {
                 map.put(e.getId(), e);
             }
             return map;
-        } catch (SQLException e) { throw new RuntimeException(e); }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public List<Task> getHistory() { return history.getHistory(); }
+    public List<Task> getHistory() {
+        return history.getHistory(); }
 
     @Override
     public TreeSet<Task> getPrioritizedTasks() {

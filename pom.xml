@@ -21,21 +21,21 @@
 
     <dependencies>
 
-    
+        <!-- JDBC: PostgreSQL -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.7.3</version>
         </dependency>
 
-  
+        <!-- HikariCP -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>5.1.0</version>
         </dependency>
 
-      
+        <!-- Gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -44,7 +44,7 @@
 
         <!-- ====== ТЕСТЫ ====== -->
 
-      
+        <!-- JUnit 5 API (пишем/компилируем тесты) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -52,7 +52,7 @@
             <scope>test</scope>
         </dependency>
 
-     
+        <!-- Параметризованные тесты JUnit 5 (опционально, но полезно) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
@@ -60,7 +60,7 @@
             <scope>test</scope>
         </dependency>
 
-     
+        <!-- Движок запуска JUnit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -68,7 +68,7 @@
             <scope>test</scope>
         </dependency>
 
-     
+        <!-- Vintage-движок, чтобы JUnit4-тесты тоже запускались под JUnit Platform -->
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
@@ -76,7 +76,7 @@
             <scope>test</scope>
         </dependency>
 
-     
+        <!-- Сам JUnit 4 (нужен для компиляции старых тестов) -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -89,13 +89,13 @@
     <build>
         <plugins>
 
-       
+            <!-- Запуск тестов на JUnit Platform (JUnit 5/4) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
-                
+                    <!-- для модульной JVM иногда полезно -->
                     <useModulePath>false</useModulePath>
                     <includes>
                         <include>**/*Test.java</include>
@@ -105,7 +105,7 @@
                 </configuration>
             </plugin>
 
-          
+            <!-- Cборка fat-jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -128,5 +128,4 @@
 
         </plugins>
     </build>
-
 </project>

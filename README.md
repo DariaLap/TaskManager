@@ -22,7 +22,7 @@ PostgreSQL: localhost:5433 (mapped to container’s 5432)
 pgAdmin: http://localhost:5050
 
 
-1) Start the Database & Frontend (Docker)
+# 1) Start the Database & Frontend (Docker)
 
 stop and clean old stack (safe to run)
 `docker compose down -v`
@@ -33,10 +33,10 @@ Open Frontend: http://localhost:5500
 
 pgAdmin available at: http://localhost:5050 for checking, altough DB schema is auto-applied from db/init.sql on first start.
 
-2) Run the main class http.HttpTaskServer from your IDE.
+# 2) Run the main class http.HttpTaskServer from your IDE.
 The server must listen on port 8080.
 
-3) Project Structure
+# 3) Project Structure
 
 project-root/
   docker-compose.yml     # containers (Postgres, pgAdmin, frontend)
@@ -65,5 +65,6 @@ project-root/
         Status.java 
   README.md              # setup & usage
   pom.xml                # Maven build config
+
 
 

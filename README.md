@@ -42,33 +42,32 @@ The server must listen on port 8080.
 
 # 3) Project Structure
 
-project-root/
+project-root
 
-  docker-compose.yml     # containers (Postgres, pgAdmin, frontend)
   
-  db/                    # database schema
+  db/                    - database schema
   
     init.sql
     
-  front/                 # static frontend
+  front/                 - static frontend
   
-    index.html           # UI layout
+    index.html           - UI layout
     
-    styles.css           # styling
+    styles.css            - styling
     
-    app.js               # JS logic
+    app.js               -  JS logic
     
   src/main/java/
   
-    http/                # HTTP server
+    http/                - HTTP server
     
-        HttpTaskServer.java  # backend entry point
+        HttpTaskServer.java  - backend entry point
         
         BaseHttpHandler.java 
         
         CorsFilter.java     
         
-    manager/             # task managers (InMemory, File, Postgres)
+    manager/             - task managers (InMemory, File, Postgres)
     
         TaskManager.java         
         
@@ -82,7 +81,7 @@ project-root/
         
         Db.java   
         
-    model/               # domain models (Task, Epic, SubTask, Status)
+    model/               - domain models (Task, Epic, SubTask, Status)
     
         Task.java     
         
@@ -92,9 +91,12 @@ project-root/
         
         Status.java 
         
-  README.md              # setup & usage
+  README.md              - setup & usage
   
-  pom.xml                # Maven build config
+  pom.xml                - Maven build config
+
+  docker-compose.yml    - containers (Postgres, pgAdmin, frontend)
+
 
 
 

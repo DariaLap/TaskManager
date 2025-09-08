@@ -1,8 +1,8 @@
-Task Manager
+# Task Manager
 
 A lightweight web app to create and track Tasks, Epics, and SubTasks. Data is stored in PostgreSQL.
 
-Stack
+# Stack
 
 Frontend: HTML, CSS, JavaScript (served by Python’s http.server in Docker)
 
@@ -11,7 +11,7 @@ Backend: Java 21, Maven, custom REST API (no Spring Boot)
 Database: PostgreSQL (Docker) + pgAdmin (Docker)
 
 
-Ports
+# Ports
 
 Frontend: http://localhost:5500
 Backend API: http://localhost:8080
@@ -20,10 +20,10 @@ pgAdmin: http://localhost:5050
 
 1) Start the Database & Frontend (Docker)
 
-# stop and clean old stack (safe to run)
-docker compose down -v
-# start postgres, pgadmin, and the Python static server for /front
-docker compose up -d
+stop and clean old stack (safe to run)
+`docker compose down -v`
+start postgres, pgadmin, and the Python static server for /front
+`docker compose up -d`
 
 Open Frontend: http://localhost:5500
 

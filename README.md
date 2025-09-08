@@ -25,9 +25,13 @@ pgAdmin: http://localhost:5050
 # 1) Start the Database & Frontend (Docker)
 
 stop and clean old stack (safe to run)
+
 `docker compose down -v`
+
 start postgres, pgadmin, and the Python static server for /front
+
 `docker compose up -d`
+
 
 Open Frontend: http://localhost:5500
 
@@ -65,6 +69,7 @@ project-root/
         Status.java 
   README.md              # setup & usage
   pom.xml                # Maven build config
+
 
 
 

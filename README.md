@@ -14,9 +14,13 @@ Database: PostgreSQL (Docker) + pgAdmin (Docker)
 # Ports
 
 Frontend: http://localhost:5500
+
 Backend API: http://localhost:8080
+
 PostgreSQL: localhost:5433 (mapped to container’s 5432)
+
 pgAdmin: http://localhost:5050
+
 
 1) Start the Database & Frontend (Docker)
 
@@ -61,4 +65,5 @@ project-root/
         Status.java 
   README.md              # setup & usage
   pom.xml                # Maven build config
+
 
